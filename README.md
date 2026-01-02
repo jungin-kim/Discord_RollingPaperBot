@@ -66,21 +66,21 @@
    MY_GUILD_ID = discord.Object(id=123456789012345678) 
    # ==========================================
 ### 4단계: 봇 실행하기
-   터미널(CMD)에서 아래 명령어를 입력하여 봇을 실행합니다.
+1. 터미널(CMD)에서 아래 명령어를 입력하여 봇을 실행합니다.
    ```bash
    python main.py
    Bot is ready 또는 Logged in as... 메시지가 뜨면 성공입니다! 디스코드 서버에서 /를 눌러 명령어가 뜨는지 확인해보세요.
 
 ---
 
-🛠️ 기술 스택 (Tech Stack)
+### 🛠️ 기술 스택 (Tech Stack)
 Language: Python 3.8+
 
 Library: discord.py (app_commands)
 
 Database: SQLite3 (내장 DB 사용)
 
-⚠️ 문제 해결 (Troubleshooting)
+### ⚠️ 문제 해결 (Troubleshooting)
 Q. 명령어가 안 보여요!
 
 MY_GUILD_ID에 서버 ID를 정확히 넣었는지 확인하고, 봇을 껐다가 다시 켜보세요. (Sync 과정이 필요합니다.)
@@ -89,6 +89,6 @@ Q. 'Server Members Intent' 에러가 떠요!
 
 1단계의 5번 항목(Intents 켜기)을 수행했는지 다시 확인해주세요.
 
-📜 License
+### 📜 License
 이 프로젝트는 MIT License를 따릅니다.
    
