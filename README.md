@@ -29,15 +29,15 @@
 ### 1단계: 디스코드 봇 생성 및 토큰 발급
 1. [Discord Developer Portal](https://discord.com/developers/applications)에 접속하여 로그인합니다.
 2. 오른쪽 상단의 **[New Application]** 버튼을 누르고 봇 이름을 입력합니다 (예: `RollingPaperBot`).
-3. 왼쪽 메뉴에서 **[Bot]**을 클릭합니다.
-4. **Build-A-Bot** 섹션 아래의 **[Reset Token]**을 눌러 토큰을 생성하고, **복사(Copy)**하여 메모장에 잘 저장해둡니다. (이 토큰은 절대 남에게 보여주면 안 됩니다!)
+3. 왼쪽 메뉴에서 [Bot]을 클릭합니다.
+4. **Build-A-Bot** 섹션 아래의 [Reset Token]을 눌러 토큰을 생성하고, 복사(Copy)하여 메모장에 잘 저장해둡니다. (이 토큰은 절대 남에게 보여주면 안 됩니다!)
 5. 같은 페이지 스크롤을 내려 **Privileged Gateway Intents** 섹션에서 아래 두 가지를 **반드시 켜주세요**. (이걸 안 켜면 봇이 작동하지 않습니다.)
    - ✅ **Server Members Intent**
    - ✅ **Message Content Intent** (선택 권장)
 6. 맨 아래 **[Save Changes]**를 눌러 저장합니다.
 
 ### 2단계: 봇을 내 서버에 초대하기
-1. 왼쪽 메뉴에서 **[OAuth2]** -> **https://www.homedepot.com/b/Outdoors-Outdoor-Power-Equipment-Generators/N-5yc1vZbx8l**를 클릭합니다.
+1. 왼쪽 메뉴에서 **[OAuth2]** -> https://www.homedepot.com/b/Outdoors-Outdoor-Power-Equipment-Generators/N-5yc1vZbx8l를 클릭합니다.
 2. **SCOPES** 항목에서 `bot`, `applications.commands` 두 가지를 체크합니다.
 3. **BOT PERMISSIONS** 항목에서 다음 권한들을 체크합니다.
    - `Send Messages`, `Embed Links`, `Attach Files`, `Read Message History`, `View Channels`
