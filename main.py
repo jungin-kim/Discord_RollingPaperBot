@@ -13,7 +13,9 @@ MY_GUILD_ID = discord.Object(id=내_서버_ID)
 # ==========================================
 
 # 1. 명령어 그룹 정의 (가장 먼저 선언)
-paper_group = app_commands.Group(name="롤링페이퍼", description="익명 롤링페이퍼 관련 명령어 모음")
+# 명령어 권한 분리
+paper_group = app_commands.Group(name="롤링페이퍼", description="익명 편지 쓰기/확인")
+admin_group = app_commands.Group(name="관리자", description="[관리자 전용] 로그 및 초기화") # 새로 추가됨
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -25,12 +27,24 @@ class MyClient(discord.Client):
 
     async def setup_hook(self):
         self.init_db()
-        
-        # [NEW] 2. 정의한 그룹을 트리에 추가
+        self.tree.on_error = self.on_tree_error # 에러 핸들러 유지
+
+        # [수정] 두 그룹을 모두 등록합니다.
         self.tree.add_command(paper_group)
+        self.tree.add_command(admin_group) 
         
         self.tree.copy_global_to(guild=MY_GUILD_ID)
         await self.tree.sync(guild=MY_GUILD_ID)
+
+    # [NEW] 에러 발생 시 실행되는 함수
+    async def on_tree_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        # 관리자 권한이 없어서 난 에러라면?
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message("❌ 이 명령어를 실행할 권한(관리자)이 없습니다.", ephemeral=True)
+        else:
+            # 그 외 다른 에러라면?
+            await interaction.response.send_message(f"오류가 발생했습니다: {error}", ephemeral=True)
+            print(f"Error: {error}") # 콘솔에도 출력
 
     def init_db(self):
         conn = sqlite3.connect('rolling_paper.db')
@@ -88,11 +102,10 @@ class MyClient(discord.Client):
     @check_monthly_reset.before_loop
     async def before_check(self):
         await self.wait_until_ready() # 봇이 켜질 때까지 대기
-
 client = MyClient()
 
 # ==========================================
-# [NEW] 3. 그룹 명령어 연결 (paper_group 사용)
+# 1. 사용자 명령어 (paper_group 사용)
 # ==========================================
 
 # 1. 롤링페이퍼 쓰기 (/롤링페이퍼 쓰기)
@@ -171,12 +184,13 @@ async def check_paper(interaction: discord.Interaction):
 
 
 # ==========================================
-# 관리자 전용 기능 (/롤링페이퍼 [기능])
+# 2. 관리자 전용 기능 (admin_group)
 # ==========================================
 
 # 3. [관리자] 전체 방송 (/롤링페이퍼 전체쓰기)
-@paper_group.command(name="전체쓰기", description="[관리자] 서버의 모든 멤버(본인 제외)에게 롤링페이퍼를 씁니다.")
-@app_commands.default_permissions(administrator=True) 
+@admin_group.command(name="전체쓰기", description="[관리자] 서버의 모든 멤버(본인 제외)에게 롤링페이퍼를 씁니다.")
+@app_commands.default_permissions(administrator=True) # [수정됨] 님 버전에서는 이 명령어가 맞습니다
+@app_commands.checks.has_permissions(administrator=True) # [유지] 보안을 위해 필수
 async def broadcast_paper(interaction: discord.Interaction, content: str):
     await interaction.response.defer(ephemeral=True)
     
@@ -203,8 +217,9 @@ async def broadcast_paper(interaction: discord.Interaction, content: str):
     await interaction.followup.send(f"본인을 제외한 총 {count}명의 멤버에게 메시지를 작성했습니다.", ephemeral=True)
 
 # 4. [관리자] 로그 확인 (/롤링페이퍼 로그)
-@paper_group.command(name="로그", description="[관리자] 작성된 모든 롤링페이퍼 로그를 확인합니다.")
-@app_commands.default_permissions(administrator=True)
+@admin_group.command(name="로그", description="[관리자] 작성된 모든 롤링페이퍼 로그를 확인합니다.")
+@app_commands.default_permissions(administrator=True) # [수정됨]
+@app_commands.checks.has_permissions(administrator=True)
 async def check_logs(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
@@ -228,8 +243,9 @@ async def check_logs(interaction: discord.Interaction):
     await interaction.followup.send("로그 파일을 생성했습니다.", file=discord_file)
 
 # 5. [관리자] DB 초기화 (/롤링페이퍼 초기화)
-@paper_group.command(name="초기화", description="[관리자] 저장된 모든 메시지를 즉시 삭제합니다.")
-@app_commands.default_permissions(administrator=True)
+@admin_group.command(name="초기화", description="[관리자] 저장된 모든 메시지를 즉시 삭제합니다.")
+@app_commands.default_permissions(administrator=True) # [수정됨]
+@app_commands.checks.has_permissions(administrator=True)
 async def reset_db(interaction: discord.Interaction):
     conn = sqlite3.connect('rolling_paper.db')
     c = conn.cursor()
@@ -240,8 +256,9 @@ async def reset_db(interaction: discord.Interaction):
     await interaction.response.send_message("⚠️ 모든 롤링페이퍼 데이터가 초기화되었습니다.", ephemeral=True)
 
 # 6. [관리자] 자동 초기화 설정 토글 (/롤링페이퍼 자동초기화)
-@paper_group.command(name="자동초기화", description="[관리자] 매달 1일 데이터 자동 초기화 기능을 켜거나 끕니다.")
-@app_commands.default_permissions(administrator=True)
+@admin_group.command(name="자동초기화", description="[관리자] 매달 1일 데이터 자동 초기화 기능을 켜거나 끕니다.")
+@app_commands.default_permissions(administrator=True) # [수정됨]
+@app_commands.checks.has_permissions(administrator=True)
 async def toggle_auto_reset(interaction: discord.Interaction):
     conn = sqlite3.connect('rolling_paper.db')
     c = conn.cursor()
@@ -260,5 +277,6 @@ async def toggle_auto_reset(interaction: discord.Interaction):
     
     status_emoji = "🟢" if new_status == 'ON' else "🔴"
     await interaction.response.send_message(f"{status_emoji} 매달 1일 자동 초기화 기능이 **{new_status}** 상태로 변경되었습니다.", ephemeral=True)
-
+    
+    
 client.run(TOKEN)
